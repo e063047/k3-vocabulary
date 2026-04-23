@@ -616,16 +616,16 @@ function calcStats() {
     if (s === "new")     newCards++;
     if (s === "learned") learned++;
   });
-  return { due, new: newCards, learned };
+  return { due, fresh: newCards, learned };
 }
 
 function updateSettingsStats() {
   const s = calcStats();
   document.getElementById("stat-due").textContent     = s.due;
-  document.getElementById("stat-new").textContent     = s.new;
+  document.getElementById("stat-new").textContent     = s.fresh;
   document.getElementById("stat-learned").textContent = s.learned;
 
-  const total = s.due + s.new;
+  const total = s.due + s.fresh;
   const btn   = document.getElementById("start-btn");
   const sub   = document.getElementById("start-sub");
 
