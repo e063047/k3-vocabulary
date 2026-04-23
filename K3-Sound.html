@@ -568,7 +568,8 @@ function loadCard() {
   currentWord = WORDS[CARDS.indexOf(currentCard)];
   answered = false;
 
-  document.getElementById("card-img").src = currentCard + ".jpg";
+  //document.getElementById("card-img").src = currentCard + ".jpg";
+  document.getElementById("card-img").src = IMG_BASE + currentCard + ".jpg";
 
   const cover = document.getElementById("answer-cover");
   cover.style.display = mode === "test" ? "flex" : "none";
