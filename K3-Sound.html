@@ -459,6 +459,8 @@ const CARDS = [
 const WORDS = CARDS.map(c => c.slice(4).replace(/\s+/g, " ").trim());
 
 const TOTAL = CARDS.length;
+ // 線上 (GitHub Pages) 圖片在根目錄，本機圖片在 output_cards/
+const IMG_BASE = location.hostname.includes("github.io") ? "" : "output_cards/";
 
 let mode        = "test";
 let order       = "start";
