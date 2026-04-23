@@ -4,53 +4,76 @@
 
 ## 線上版本
 
-| 版本 | 連結 |
-|------|------|
-| 基本版 | https://e063047.github.io/k3-vocabulary/K3.html |
-| 含發音版 | https://e063047.github.io/k3-vocabulary/K3-Sound.html |
+| 版本 | 連結 | 說明 |
+|------|------|------|
+| 基本版 | https://e063047.github.io/k3-vocabulary/K3.html | 練習 / 測驗模式 |
+| 含發音版 | https://e063047.github.io/k3-vocabulary/K3-Sound.html | 加入 Play Sound 按鈕 |
+| SM-2 智慧複習版 | https://e063047.github.io/k3-vocabulary/K3-Sound-SM2.html | 間隔重複演算法 + 發音 |
 
-## 功能
+## 版本功能比較
 
-### 設定畫面
-- **Test Mode** — 看圖猜單字，按 Show Answer 才顯示答案
-- **Practise Mode** — 圖片與單字同時顯示
-- **Specify start position** — 從指定題號開始（001–177）
-- **Randomly allocated** — 全部 177 張隨機出現，每題只出現一次
+| 功能 | K3 | K3-Sound | K3-Sound-SM2 |
+|------|----|----------|--------------|
+| Test / Practise Mode | ✅ | ✅ | ✅ |
+| 指定起始位置 | ✅ | ✅ | — |
+| 隨機順序 | ✅ | ✅ | — |
+| Play Sound 發音 | — | ✅ | ✅ |
+| SM-2 間隔重複排程 | — | — | ✅ |
+| 學習進度追蹤 | — | — | ✅ |
 
-### 練習畫面
-- 圖片佔畫面 90%
-- 下方顯示目前模式與進度（例如 Status: 3 / 177）
-- **Show Answer** — 顯示被遮住的單字（Test Mode）
-- **🔊 Play Sound** — 朗讀當前單字（含發音版專屬）
-- **Next** — 下一張
-- **Record** — 記錄答錯的單字
-- **View Records** — 查看所有錯誤單字與錯誤次數
+---
 
-### 鍵盤快捷鍵
+## K3-Sound-SM2 功能說明
+
+### 首頁統計
+- **Due Today** — 今天需要複習的字
+- **New Cards** — 還沒學過的新字
+- **Learned** — 已熟練（複習間隔 ≥ 21 天）
+
+### 練習流程
+- **Test Mode**：看圖 → Show Answer → 出現評分按鈕
+- **Practise Mode**：圖＋單字同時顯示 → 直接評分
+
+### SM-2 評分按鈕
+| 按鈕 | 鍵盤 | 意思 | 效果 |
+|------|------|------|------|
+| 🔴 Again | `1` | 完全不記得 | 5 題後重考，明天再來 |
+| 🟠 Hard  | `2` | 很吃力     | 間隔縮短 |
+| 🔵 Good  | `3` | 正常記得   | 正常間隔 |
+| 🟢 Easy  | `4` | 非常簡單   | 間隔拉長 |
+
+> 每個按鈕上會顯示下次複習預計天數（如 `6d`、`2mo`）
+
+### 鍵盤快捷鍵（所有版本）
 | 按鍵 | 功能 |
 |------|------|
-| 空白鍵 / → | 顯示答案 / 下一張 |
-| P | 播放發音（含發音版） |
-| R | Record |
-| V | View Records |
+| 空白鍵 / → | 顯示答案 / 下一張（SM-2 版預設 Good）|
+| P | 播放發音 |
+| 1 / 2 / 3 / 4 | SM-2 評分（Again / Hard / Good / Easy）|
+| G | 開啟 Progress 畫面 |
 
-## 本機執行
+---
+
+## 離線使用（不需網路）
 
 ```bash
 python server.py
 ```
 
-自動開啟瀏覽器 `http://localhost:8000/K3.html`
+自動開啟瀏覽器 `http://localhost:8080/K3-Sound-SM2.html`
+
+> 發音功能使用瀏覽器內建 Web Speech API，離線也能正常運作。
 
 ## 檔案結構
 
 ```
 k3-vocabulary/
-├── K3.html            # 練習網頁（基本版）
-├── K3-Sound.html      # 練習網頁（含發音版）
-├── server.py          # 本機伺服器
+├── K3.html               # 基本練習版
+├── K3-Sound.html         # 含發音版
+├── K3-Sound-SM2.html     # SM-2 智慧複習版（推薦）
+├── server.py             # 本機伺服器
 ├── 001-tape.jpg
 ├── 002-game.jpg
 ├── ...
-└── 177-parrot.jpg     # 共 177 張字卡圖片
+└── 177-parrot.jpg        # 共 177 張字卡圖片
 ```
