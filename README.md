@@ -4,7 +4,10 @@
 
 ## 線上版本
 
-**https://e063047.github.io/k3-vocabulary/K3.html**
+| 版本 | 連結 |
+|------|------|
+| 基本版 | https://e063047.github.io/k3-vocabulary/K3.html |
+| 含發音版 | https://e063047.github.io/k3-vocabulary/K3-Sound.html |
 
 ## 功能
 
@@ -18,6 +21,7 @@
 - 圖片佔畫面 90%
 - 下方顯示目前模式與進度（例如 Status: 3 / 177）
 - **Show Answer** — 顯示被遮住的單字（Test Mode）
+- **🔊 Play Sound** — 朗讀當前單字（含發音版專屬）
 - **Next** — 下一張
 - **Record** — 記錄答錯的單字
 - **View Records** — 查看所有錯誤單字與錯誤次數
@@ -26,6 +30,7 @@
 | 按鍵 | 功能 |
 |------|------|
 | 空白鍵 / → | 顯示答案 / 下一張 |
+| P | 播放發音（含發音版） |
 | R | Record |
 | V | View Records |
 
@@ -35,16 +40,17 @@
 python server.py
 ```
 
-開啟後自動跳出瀏覽器，網址為 `http://localhost:8000/K3.html`
+自動開啟瀏覽器 `http://localhost:8000/K3.html`
 
 ## 檔案結構
 
 ```
 k3-vocabulary/
-├── K3.html          # 練習網頁
-├── server.py        # 本機伺服器
+├── K3.html            # 練習網頁（基本版）
+├── K3-Sound.html      # 練習網頁（含發音版）
+├── server.py          # 本機伺服器
 ├── 001-tape.jpg
 ├── 002-game.jpg
 ├── ...
-└── 177-parrot.jpg   # 共 177 張字卡圖片
+└── 177-parrot.jpg     # 共 177 張字卡圖片
 ```
