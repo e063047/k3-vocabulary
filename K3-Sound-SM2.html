@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K3 SM-2 Smart Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── Settings Screen ──────────────────────────────────── */
+  #settings-screen {
+    background: #16213e;
+    border-radius: 16px;
+    padding: 36px 44px;
+    width: 440px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  #settings-screen h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+    color: #e94560;
+    letter-spacing: 1px;
+  }
+
+  #settings-screen .subtitle {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #555;
+    margin-bottom: 24px;
+  }
+
+  /* SM-2 stats panel */
+  #stats-panel {
+    background: #0f1e3a;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    text-align: center;
+  }
+
+  .stat-item { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num  { font-size: 1.6rem; font-weight: 800; }
+  .stat-lbl  { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-due     .stat-num { color: #e94560; }
+  .stat-new     .stat-num { color: #f0a500; }
+  .stat-learned .stat-num { color: #2ecc71; }
+
+  .setting-group { margin-bottom: 20px; }
+
+  .setting-group > label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #a8b2d8;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mode-btn-row { display: flex; gap: 10px; }
+
+  .mode-btn {
+    flex: 1;
+    padding: 11px;
+    border: 2px solid #0f3460;
+    border-radius: 8px;
+    background: #0f3460;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.92rem;
+    transition: all 0.2s;
+  }
+
+  .mode-btn.active {
+    border-color: #e94560;
+    background: #e94560;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  #start-btn {
+    width: 100%;
+    padding: 14px;
+    background: #e94560;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  #start-btn:hover   { background: #c73652; transform: translateY(-1px); }
+  #start-btn:active  { transform: translateY(0); }
+  #start-btn:disabled { background: #444; cursor: not-allowed; transform: none; }
+
+  #start-sub {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 8px;
+  }
+
+  .btn-link {
+    background: none;
+    border: none;
+    color: #5b4fcf;
+    cursor: pointer;
+    font-size: 0.82rem;
+    text-decoration: underline;
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+  }
+
+  /* ── No-cards Screen ─────────────────────────────────── */
+  #nocard-screen {
+    display: none;
+    text-align: center;
+    background: #16213e;
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 400px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  #nocard-screen .big-icon { font-size: 3.5rem; margin-bottom: 16px; }
+  #nocard-screen h2 { color: #2ecc71; margin-bottom: 12px; font-size: 1.4rem; }
+  #nocard-screen p  { color: #888; margin-bottom: 20px; line-height: 1.6; }
+  #nocard-screen .next-due { color: #f0a500; font-size: 0.9rem; margin-bottom: 24px; }
+
+  #back-to-settings-btn {
+    padding: 10px 28px;
+    background: #0f3460;
+    color: #eee;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+
+  /* ── Practice Screen ──────────────────────────────────── */
+  #practice-screen {
+    display: none;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #card-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #111;
+  }
+
+  #card-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    user-select: none;
+  }
+
+  #answer-cover {
+    position: absolute;
+    top: 0; right: 0;
+    width: 50%; height: 100%;
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 3px dashed #333;
+  }
+
+  #answer-cover span { font-size: 0.9rem; color: #444; letter-spacing: 2px; }
+
+  /* ── Bottom Bar ───────────────────────────────────────── */
+  #bottom-bar {
+    background: #16213e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    gap: 8px;
+    border-top: 2px solid #0f3460;
+    min-height: 70px;
+    flex-wrap: wrap;
+  }
+
+  #mode-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  #mode-label.test     { background: #e94560; color: #fff; }
+  #mode-label.practise { background: #0f7c4c; color: #fff; }
+
+  #controls { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; flex: 1; }
+
+  .ctrl-btn {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  #show-answer-btn  { background: #e94560; color: #fff; }
+  #show-answer-btn:hover { background: #c73652; }
+
+  #play-sound-btn {
+    background: #5b4fcf; color: #fff;
+    display: flex; align-items: center; gap: 5px;
+  }
+  #play-sound-btn:hover   { background: #4a3db8; }
+  #play-sound-btn.playing { background: #3a2da8; animation: pulse 0.6s infinite alternate; }
+
+  /* SM-2 rating buttons */
+  #btn-again { background: #c0392b; color: #fff; }
+  #btn-again:hover { background: #a93226; }
+  #btn-hard  { background: #d35400; color: #fff; }
+  #btn-hard:hover  { background: #b84700; }
+  #btn-good  { background: #1a6db5; color: #fff; }
+  #btn-good:hover  { background: #155a96; }
+  #btn-easy  { background: #1e8449; color: #fff; }
+  #btn-easy:hover  { background: #196a3b; }
+
+  /* Show interval hints on buttons */
+  .btn-hint { font-size: 0.68rem; font-weight: 400; opacity: 0.85; display: block; }
+
+  #stats-label {
+    font-size: 0.78rem;
+    color: #a8b2d8;
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.6; } }
+
+  /* ── Progress Screen ──────────────────────────────────── */
+  #progress-screen {
+    display: none;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a2e;
+  }
+
+  #progress-header {
+    background: #16213e;
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #0f3460;
+    flex-shrink: 0;
+  }
+
+  #progress-header h2 { font-size: 1.1rem; color: #e94560; }
+
+  .ph-btns { display: flex; gap: 8px; }
+  .ph-btns button {
+    padding: 7px 16px; border: none; border-radius: 7px;
+    cursor: pointer; font-size: 0.85rem; font-weight: 600;
+  }
+
+  #progress-reset-btn { background: #c73652; color: #fff; }
+  #progress-close-btn { background: #0f3460; color: #eee; }
+
+  #progress-filter {
+    background: #12192e;
+    padding: 10px 22px;
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #0f3460;
+    flex-shrink: 0;
+  }
+
+  .filter-btn {
+    padding: 5px 14px;
+    border: 1px solid #0f3460;
+    border-radius: 20px;
+    background: #0f1e3a;
+    color: #888;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active { background: #e94560; border-color: #e94560; color: #fff; font-weight: 700; }
+
+  #progress-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 22px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-content: flex-start;
+  }
+
+  .prog-card {
+    background: #16213e;
+    border-radius: 10px;
+    padding: 9px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 88px;
+    cursor: pointer;
+    transition: border 0.15s;
+    border: 2px solid transparent;
+  }
+
+  .prog-card:hover { border-color: #5b4fcf; }
+  .prog-card.status-new      { border-color: #333; }
+  .prog-card.status-due      { border-color: #e94560; }
+  .prog-card.status-learning { border-color: #f0a500; }
+  .prog-card.status-learned  { border-color: #2ecc71; }
+
+  .prog-num   { font-size: 0.7rem; color: #666; }
+  .prog-word  { font-size: 0.9rem; font-weight: 700; color: #eee; text-align: center; }
+  .prog-badge { font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; }
+  .badge-new      { background: #2a2a4a; color: #888; }
+  .badge-due      { background: #5a1020; color: #e94560; }
+  .badge-learning { background: #4a3000; color: #f0a500; }
+  .badge-learned  { background: #0a3a1a; color: #2ecc71; }
+  .prog-next  { font-size: 0.68rem; color: #555; }
+
+  /* ── Toast ────────────────────────────────────────────── */
+  #toast {
+    position: fixed;
+    bottom: 85px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 9px 22px;
+    border-radius: 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    color: #fff;
+  }
+
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.green { background: #1e8449; }
+  #toast.orange { background: #d35400; }
+  #toast.red    { background: #c0392b; }
+  #toast.blue   { background: #1a6db5; }
+
+  @media (max-width: 600px) {
+    #settings-screen { width: 96vw; padding: 24px 16px; }
+    .ctrl-btn { padding: 8px 11px; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════ SETTINGS SCREEN ════════════ -->
+<div id="settings-screen">
+  <h1>K3 SM-2 Smart Review</h1>
+  <p class="subtitle">間隔重複演算法 — 幫你記得更久</p>
+
+  <div id="stats-panel">
+    <div class="stat-item stat-due">
+      <span class="stat-num" id="stat-due">0</span>
+      <span class="stat-lbl">Due Today</span>
+    </div>
+    <div class="stat-item stat-new">
+      <span class="stat-num" id="stat-new">0</span>
+      <span class="stat-lbl">New Cards</span>
+    </div>
+    <div class="stat-item stat-learned">
+      <span class="stat-num" id="stat-learned">0</span>
+      <span class="stat-lbl">Learned</span>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <label>Mode</label>
+    <div class="mode-btn-row">
+      <button class="mode-btn active" data-mode="test"     onclick="selectMode('test')">Test Mode</button>
+      <button class="mode-btn"        data-mode="practise" onclick="selectMode('practise')">Practise Mode</button>
+    </div>
+  </div>
+
+  <button id="start-btn" onclick="startPractice()">Start Review</button>
+  <p id="start-sub"></p>
+
+  <button class="btn-link" onclick="openProgress()">📊 View All Cards Progress</button>
+</div>
+
+<!-- ════════════ NO CARDS SCREEN ════════════ -->
+<div id="nocard-screen">
+  <div class="big-icon">🎉</div>
+  <h2>All done for today!</h2>
+  <p>You've reviewed all due cards.<br>Great job keeping up!</p>
+  <p class="next-due" id="next-due-msg"></p>
+  <button id="back-to-settings-btn" onclick="showSettings()">Back</button>
+</div>
+
+<!-- ════════════ PRACTICE SCREEN ════════════ -->
+<div id="practice-screen">
+  <div id="card-area">
+    <img id="card-img" src="" alt="flashcard">
+    <div id="answer-cover"><span>? ? ?</span></div>
+  </div>
+
+  <div id="bottom-bar">
+    <span id="mode-label">Test Mode</span>
+
+    <div id="controls">
+      <!-- Before answer (Test Mode) -->
+      <button class="ctrl-btn" id="show-answer-btn" onclick="showAnswer()">Show Answer</button>
+      <!-- Sound button (always visible) -->
+      <button class="ctrl-btn" id="play-sound-btn" onclick="playSound()">&#128266; Play Sound</button>
+      <!-- SM-2 rating buttons (shown after answer) -->
+      <button class="ctrl-btn" id="btn-again" onclick="rate(1)" style="display:none">
+        Again<span class="btn-hint" id="hint-again"></span>
+      </button>
+      <button class="ctrl-btn" id="btn-hard" onclick="rate(3)" style="display:none">
+        Hard<span class="btn-hint" id="hint-hard"></span>
+      </button>
+      <button class="ctrl-btn" id="btn-good" onclick="rate(4)" style="display:none">
+        Good<span class="btn-hint" id="hint-good"></span>
+      </button>
+      <button class="ctrl-btn" id="btn-easy" onclick="rate(5)" style="display:none">
+        Easy<span class="btn-hint" id="hint-easy"></span>
+      </button>
+      <!-- Progress button -->
+      <button class="ctrl-btn" onclick="openProgress()" style="background:#2a2a5a;color:#a8b2d8;font-size:0.78rem;padding:8px 11px;">Progress</button>
+    </div>
+
+    <span id="stats-label">Status: 0 / 0</span>
+  </div>
+</div>
+
+<!-- ════════════ PROGRESS SCREEN ════════════ -->
+<div id="progress-screen">
+  <div id="progress-header">
+    <h2>All Cards Progress</h2>
+    <div class="ph-btns">
+      <button id="progress-reset-btn" onclick="resetAllSM2()">Reset All</button>
+      <button id="progress-close-btn" onclick="closeProgress()">Back</button>
+    </div>
+  </div>
+  <div id="progress-filter">
+    <button class="filter-btn active" data-f="all"      onclick="setFilter('all')">All (177)</button>
+    <button class="filter-btn"        data-f="due"      onclick="setFilter('due')">Due</button>
+    <button class="filter-btn"        data-f="new"      onclick="setFilter('new')">New</button>
+    <button class="filter-btn"        data-f="learning" onclick="setFilter('learning')">Learning</button>
+    <button class="filter-btn"        data-f="learned"  onclick="setFilter('learned')">Learned</button>
+  </div>
+  <div id="progress-list"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Card list ─────────────────────────────────────────────
+const CARDS = [
+  "001-tape","002-game","003-gate","004-kite","005-cape",
+  "006-cake","007-wave","008-pine","009-cane","010-name",
+  "011-skate","012-ripe","013-mane","014-lake","015-cave",
+  "016-fine","017-lime","018-five","019-home","020-cube",
+  "021-bike","022-nine","023-bone","024-mute","025-time",
+  "026-dive","027-cone","028-cute","029-hike","030-line",
+  "031-rope","032-mule","033-tube","034-rain","035-bay",
+  "036-sail","037-June","038-nail","039-day","040-mail",
+  "041-tune","042-tail","043-say","044-hay","045-rule",
+  "046-wait","047-pay","048-May","049-cat","050-ram",
+  "051-fan","052-dad","053-ant","054-jam","055-man",
+  "056-pad","057-yak","058-yam","059-pan","060-bag",
+  "061-ax","062-dam","063-can","064-rag","065-cap",
+  "066-bat","067-web","068-jet","069-map","070-rat",
+  "071-egg","072-net","073-nap","074-hat","075-vet",
+  "076-wet","077-tap","078-mat","079-ten","080-pet",
+  "081-hen","082-hip","083-lip","084-bib","085-pen",
+  "086-ink","087-tip","088-rib","089-red","090-zip",
+  "091-sip","092-kid","093-bed","094-in","095-rip",
+  "096-lid","097-pin","098-fig","099-pit","100-fox",
+  "101-fin","102-wig","103-hit","104-log","105-bin",
+  "106-big","107-six","108-ox","109-win","110-dig",
+  "111-mix","112-rod","113-pot","114-top","115-sun",
+  "116-bug","117-hot","118-mop","119-up","120-rug",
+  "121-cot","122-hop","123-jug","124-mug","125-dot",
+  "126-pop","127-hug","128-bud","129-mud","130-hut",
+  "131-gum","132-fun","133-pup","134-cut","135-hum",
+  "136-cup","137-cub","138-bun","139-nut","140-tub",
+  "141-run","142-floor","143-window","144-door","145-ceiling",
+  "146-light","147-sink","148-meat","149-vegetables","150-fruit",
+  "151-pasta","152-rice","153-milk","154-cake","155-present",
+  "156-card","157-mask","158-candle","159-game","160-swimming pool",
+  "161-zoo","162-library","163-supermarket","164-coffee shop","165-park",
+  "166-dancing","167-running","168-jumping rope","169-roller skating","170-riding a bike",
+  "171-riding a scooter","172-elephant","173-giraffe","174-crocodile","175-monkey",
+  "176-lion","177-parrot"
+];
+
+const WORDS    = CARDS.map(c => c.slice(4).replace(/\s+/g, " ").trim());
+const TOTAL    = CARDS.length;
+const IMG_BASE = location.hostname.includes("github.io") ? "" : "output_cards/";
+
+// ── SM-2 State ────────────────────────────────────────────
+// sm2Data[cardName] = { ef, interval, repetitions, dueDate, lastReview }
+let sm2Data = {};
+let mode    = "test";
+let queue   = [];
+let queueIdx = 0;
+let answered = false;
+let currentCard = null;
+let currentWord = null;
+let progressFilter = "all";
+let fromScreen = "settings"; // which screen to return to from progress
+
+// ── Helpers ───────────────────────────────────────────────
+function today() { return new Date().toISOString().split("T")[0]; }
+
+function addDays(dateStr, n) {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split("T")[0];
+}
+
+function cardStatus(cardName) {
+  const d = sm2Data[cardName];
+  if (!d) return "new";
+  if (d.dueDate <= today()) return "due";
+  if (d.interval >= 21) return "learned";
+  return "learning";
+}
+
+// ── SM-2 Algorithm ────────────────────────────────────────
+function sm2Update(cardName, quality) {
+  let d = sm2Data[cardName] || { ef: 2.5, interval: 0, repetitions: 0, dueDate: today(), lastReview: null };
+
+  if (quality >= 3) {
+    if      (d.repetitions === 0) d.interval = 1;
+    else if (d.repetitions === 1) d.interval = 6;
+    else                          d.interval = Math.round(d.interval * d.ef);
+    d.repetitions++;
+  } else {
+    d.repetitions = 0;
+    d.interval    = 1;
+  }
+
+  d.ef = Math.max(1.3, d.ef + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  d.dueDate    = addDays(today(), d.interval);
+  d.lastReview = today();
+  sm2Data[cardName] = d;
+  saveSM2();
+}
+
+// Preview next interval for a given quality (without modifying state)
+function previewInterval(cardName, quality) {
+  const d = sm2Data[cardName] || { ef: 2.5, interval: 0, repetitions: 0 };
+  let interval;
+  if (quality >= 3) {
+    if      (d.repetitions === 0) interval = 1;
+    else if (d.repetitions === 1) interval = 6;
+    else                          interval = Math.round(d.interval * d.ef);
+  } else {
+    interval = 1;
+  }
+  if (interval === 1) return "1d";
+  if (interval < 30)  return interval + "d";
+  return Math.round(interval / 30) + "mo";
+}
+
+function saveSM2() { localStorage.setItem("k3_sm2", JSON.stringify(sm2Data)); }
+
+function loadSM2() {
+  try { sm2Data = JSON.parse(localStorage.getItem("k3_sm2") || "{}"); }
+  catch(e) { sm2Data = {}; }
+}
+
+// ── Stats ─────────────────────────────────────────────────
+function calcStats() {
+  let due = 0, newCards = 0, learned = 0;
+  CARDS.forEach(c => {
+    const s = cardStatus(c);
+    if (s === "due")     due++;
+    if (s === "new")     newCards++;
+    if (s === "learned") learned++;
+  });
+  return { due, new: newCards, learned };
+}
+
+function updateSettingsStats() {
+  const s = calcStats();
+  document.getElementById("stat-due").textContent     = s.due;
+  document.getElementById("stat-new").textContent     = s.new;
+  document.getElementById("stat-learned").textContent = s.learned;
+
+  const total = s.due + s.new;
+  const btn   = document.getElementById("start-btn");
+  const sub   = document.getElementById("start-sub");
+
+  if (total === 0) {
+    btn.disabled  = true;
+    btn.textContent = "Nothing due today";
+    // Find next due date
+    const upcoming = CARDS
+      .map(c => sm2Data[c]?.dueDate)
+      .filter(Boolean)
+      .filter(d => d > today())
+      .sort()[0];
+    sub.textContent = upcoming ? "Next review: " + upcoming : "";
+  } else {
+    btn.disabled  = false;
+    btn.textContent = "Start Review";
+    sub.textContent = total + " card" + (total > 1 ? "s" : "") + " to review";
+  }
+}
+
+// ── Build queue ───────────────────────────────────────────
+function buildQueue() {
+  const due = CARDS.filter(c => {
+    const d = sm2Data[c];
+    return d && d.dueDate <= today();
+  });
+  const newCards = CARDS.filter(c => !sm2Data[c]);
+
+  // Shuffle each group separately, combine due first
+  return [...shuffle(due), ...newCards];
+}
+
+// ── Start Practice ────────────────────────────────────────
+function startPractice() {
+  queue    = buildQueue();
+  queueIdx = 0;
+
+  if (queue.length === 0) { showNoCards(); return; }
+
+  hide("settings-screen");
+  show("practice-screen", "flex");
+
+  const ml = document.getElementById("mode-label");
+  if (mode === "test") { ml.textContent = "Test Mode";     ml.className = "test"; }
+  else                 { ml.textContent = "Practise Mode"; ml.className = "practise"; }
+
+  loadCard();
+}
+
+// ── Load Card ─────────────────────────────────────────────
+function loadCard() {
+  speechSynthesis.cancel();
+  document.getElementById("play-sound-btn").classList.remove("playing");
+
+  if (queueIdx >= queue.length) { showNoCards(); return; }
+
+  currentCard = queue[queueIdx];
+  currentWord = WORDS[CARDS.indexOf(currentCard)];
+  answered    = false;
+
+  document.getElementById("card-img").src = IMG_BASE + currentCard + ".jpg";
+
+  // Cover for test mode
+  document.getElementById("answer-cover").style.display = mode === "test" ? "flex" : "none";
+
+  // Button state
+  setRatingVisible(mode === "practise");
+  document.getElementById("show-answer-btn").style.display = mode === "test" ? "inline-block" : "none";
+
+  // Update interval hints
+  [1, 3, 4, 5].forEach((q, i) => {
+    const ids = ["hint-again","hint-hard","hint-good","hint-easy"];
+    document.getElementById(ids[i]).textContent = previewInterval(currentCard, q);
+  });
+
+  // Status
+  document.getElementById("stats-label").textContent =
+    "Status: " + (queueIdx + 1) + " / " + queue.length;
+}
+
+function setRatingVisible(show) {
+  ["btn-again","btn-hard","btn-good","btn-easy"].forEach(id => {
+    document.getElementById(id).style.display = show ? "inline-block" : "none";
+  });
+}
+
+// ── Show Answer ───────────────────────────────────────────
+function showAnswer() {
+  answered = true;
+  document.getElementById("answer-cover").style.display = "none";
+  document.getElementById("show-answer-btn").style.display = "none";
+  setRatingVisible(true);
+}
+
+// ── Rate Card (SM-2) ──────────────────────────────────────
+function rate(quality) {
+  if (!currentCard) return;
+  sm2Update(currentCard, quality);
+
+  // If "Again" — requeue card 5 positions later so it comes back soon
+  if (quality <= 1) {
+    const insertAt = Math.min(queueIdx + 5, queue.length);
+    queue.splice(insertAt, 0, currentCard);
+  }
+
+  // Toast
+  const msgs   = { 1:"Again — see you soon!", 3:"Hard — keep practising", 4:"Good — well done!", 5:"Easy — excellent!" };
+  const colors = { 1:"red", 3:"orange", 4:"blue", 5:"green" };
+  showToast(msgs[quality], colors[quality]);
+
+  queueIdx++;
+  loadCard();
+}
+
+// ── No Cards ──────────────────────────────────────────────
+function showNoCards() {
+  hide("practice-screen");
+  show("nocard-screen");
+
+  const upcoming = CARDS
+    .map(c => sm2Data[c]?.dueDate)
+    .filter(Boolean)
+    .filter(d => d > today())
+    .sort()[0];
+
+  document.getElementById("next-due-msg").textContent =
+    upcoming ? "Next cards due: " + upcoming : "Start reviewing to build your schedule!";
+}
+
+function showSettings() {
+  hide("nocard-screen");
+  updateSettingsStats();
+  show("settings-screen");
+}
+
+// ── Progress Screen ───────────────────────────────────────
+function openProgress() {
+  fromScreen = document.getElementById("settings-screen").style.display !== "none" ? "settings" : "practice";
+  hide("settings-screen");
+  hide("practice-screen");
+  show("progress-screen", "flex");
+  renderProgress();
+}
+
+function closeProgress() {
+  hide("progress-screen");
+  if (fromScreen === "practice" && queue.length > 0) {
+    show("practice-screen", "flex");
+  } else {
+    updateSettingsStats();
+    show("settings-screen");
+  }
+}
+
+function setFilter(f) {
+  progressFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b =>
+    b.classList.toggle("active", b.dataset.f === f));
+  renderProgress();
+}
+
+function renderProgress() {
+  const list = document.getElementById("progress-list");
+  list.innerHTML = "";
+
+  const filtered = CARDS.filter(c => {
+    if (progressFilter === "all") return true;
+    return cardStatus(c) === progressFilter;
+  });
+
+  filtered.forEach(cardName => {
+    const status = cardStatus(cardName);
+    const num    = cardName.slice(0, 3);
+    const word   = cardName.slice(4).replace(/\s+/g, " ").trim();
+    const d      = sm2Data[cardName];
+
+    const badgeText  = { new:"New", due:"Due", learning:"Learning", learned:"Learned" }[status];
+    const badgeClass = "badge-" + status;
+
+    let nextLine = "";
+    if (d) nextLine = status === "due" ? "Overdue" : "Next: " + d.dueDate;
+
+    const div = document.createElement("div");
+    div.className = "prog-card status-" + status;
+    div.title = "Click to review this card";
+    div.innerHTML =
+      '<span class="prog-num">'   + num  + '</span>' +
+      '<span class="prog-word">'  + word + '</span>' +
+      '<span class="prog-badge ' + badgeClass + '">' + badgeText + '</span>' +
+      (nextLine ? '<span class="prog-next">' + nextLine + '</span>' : '');
+    div.onclick = () => reviewFromProgress(cardName);
+    list.appendChild(div);
+  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="color:#555;margin:40px auto;font-size:1rem;">No cards in this category.</div>';
+  }
+}
+
+function reviewFromProgress(cardName) {
+  queue    = [cardName, ...CARDS.filter(c => c !== cardName && cardStatus(c) === "due"), ...CARDS.filter(c => !sm2Data[c])];
+  queueIdx = 0;
+  hide("progress-screen");
+  show("practice-screen", "flex");
+
+  const ml = document.getElementById("mode-label");
+  if (mode === "test") { ml.textContent = "Test Mode";     ml.className = "test"; }
+  else                 { ml.textContent = "Practise Mode"; ml.className = "practise"; }
+
+  fromScreen = "practice";
+  loadCard();
+}
+
+function resetAllSM2() {
+  if (!confirm("Reset ALL SM-2 progress? This cannot be undone.")) return;
+  sm2Data = {};
+  saveSM2();
+  renderProgress();
+  showToast("Progress reset", "red");
+}
+
+// ── Speech ────────────────────────────────────────────────
+let englishVoice = null;
+
+function initVoice() {
+  const load = () => {
+    const voices = speechSynthesis.getVoices();
+    englishVoice =
+      voices.find(v => v.lang === "en-US") ||
+      voices.find(v => v.lang.startsWith("en")) ||
+      voices[0] || null;
+  };
+  if (speechSynthesis.getVoices().length > 0) load();
+  else speechSynthesis.addEventListener("voiceschanged", load, { once: true });
+}
+
+function playSound() {
+  if (!currentWord) return;
+  speechSynthesis.cancel();
+  const btn = document.getElementById("play-sound-btn");
+  btn.classList.add("playing");
+  const utter    = new SpeechSynthesisUtterance(currentWord);
+  utter.lang     = "en-US";
+  utter.rate     = 0.4;
+  utter.pitch    = 1;
+  if (englishVoice) utter.voice = englishVoice;
+  utter.onend  = () => btn.classList.remove("playing");
+  utter.onerror= () => btn.classList.remove("playing");
+  speechSynthesis.speak(utter);
+}
+
+// ── Settings helpers ──────────────────────────────────────
+function selectMode(m) {
+  mode = m;
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("active", b.dataset.mode === m));
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────
+document.addEventListener("keydown", e => {
+  if (document.getElementById("practice-screen").style.display === "none") return;
+  if (e.code === "Space" || e.code === "ArrowRight") {
+    e.preventDefault();
+    if (mode === "test" && !answered) showAnswer();
+    else if (answered || mode === "practise") rate(4); // default: Good
+  }
+  if (e.code === "Digit1") rate(1);
+  if (e.code === "Digit2") rate(3);
+  if (e.code === "Digit3") rate(4);
+  if (e.code === "Digit4") rate(5);
+  if (e.code === "KeyP")   playSound();
+  if (e.code === "KeyG")   openProgress();
+});
+
+// ── Utilities ─────────────────────────────────────────────
+function show(id, display) {
+  const el = document.getElementById(id);
+  el.style.display = display || "block";
+  if (display === "flex") el.style.flexDirection = "column";
+}
+function hide(id) { document.getElementById(id).style.display = "none"; }
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+let toastTimer;
+function showToast(msg, color) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className   = "show " + (color || "blue");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = "", 2000);
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadSM2();
+initVoice();
+updateSettingsStats();
+</script>
+</body>
+</html>
