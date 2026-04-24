@@ -455,6 +455,9 @@ const CARDS = [
 
 const TOTAL = CARDS.length;
 
+// 線上 (GitHub Pages) 圖片在根目錄，本機圖片在 output_cards/
+const IMG_BASE = location.hostname.includes("github.io") ? "" : "output_cards/";
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let mode        = "test";
 let order       = "start";
@@ -526,7 +529,7 @@ function loadCard() {
   answered = false;
 
   const img = document.getElementById("card-img");
-  img.src = currentCard + ".jpg";
+  img.src = IMG_BASE + currentCard + ".jpg";
 
   const cover = document.getElementById("answer-cover");
   if (mode === "test") {

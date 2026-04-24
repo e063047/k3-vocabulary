@@ -7,8 +7,10 @@
 | 版本 | 連結 | 說明 |
 |------|------|------|
 | 基本版 | https://e063047.github.io/k3-vocabulary/K3.html | 練習 / 測驗模式 |
-| 含發音版 | https://e063047.github.io/k3-vocabulary/K3-Sound.html | 加入 Play Sound 按鈕 |
+| 含發音版 | https://e063047.github.io/k3-vocabulary/K3-Sound.html | 發音 + 記錄錯誤 |
 | SM-2 智慧複習版 | https://e063047.github.io/k3-vocabulary/K3-Sound-SM2.html | 間隔重複演算法 + 發音 |
+
+---
 
 ## 版本功能比較
 
@@ -18,8 +20,34 @@
 | 指定起始位置 | ✅ | ✅ | — |
 | 隨機順序 | ✅ | ✅ | — |
 | Play Sound 發音 | — | ✅ | ✅ |
+| 上一題 / 下一題 | — | ✅ | ✅ |
+| 錯題記錄 & 回顧 | — | ✅ | — |
 | SM-2 間隔重複排程 | — | — | ✅ |
 | 學習進度追蹤 | — | — | ✅ |
+
+---
+
+## 鍵盤快捷鍵
+
+### K3-Sound 版
+
+| 按鍵 | 功能 |
+|------|------|
+| 空白鍵 / `→` | 顯示答案 / 下一張 |
+| `←` | 上一張 |
+| `P` | 播放發音 |
+| `R` | 記錄錯誤 |
+| `V` | 開啟記錄回顧 |
+
+### K3-Sound-SM2 版
+
+| 按鍵 | 功能 |
+|------|------|
+| 空白鍵 / `→` | 顯示答案 / 評分 Good（預設）|
+| `←` | 上一張 |
+| `P` | 播放發音 |
+| `1` / `2` / `3` / `4` | SM-2 評分（Again / Hard / Good / Easy）|
+| `G` | 開啟 Progress 畫面 |
 
 ---
 
@@ -44,14 +72,6 @@
 
 > 每個按鈕上會顯示下次複習預計天數（如 `6d`、`2mo`）
 
-### 鍵盤快捷鍵（所有版本）
-| 按鍵 | 功能 |
-|------|------|
-| 空白鍵 / → | 顯示答案 / 下一張（SM-2 版預設 Good）|
-| P | 播放發音 |
-| 1 / 2 / 3 / 4 | SM-2 評分（Again / Hard / Good / Easy）|
-| G | 開啟 Progress 畫面 |
-
 ---
 
 ## 離線使用（不需網路）
@@ -64,16 +84,32 @@ python server.py
 
 > 發音功能使用瀏覽器內建 Web Speech API，離線也能正常運作。
 
+---
+
+## PDF 轉字卡圖片
+
+若需要重新從 PDF 生成圖片：
+
+```bash
+python convert_flashcards.py K3.pdf
+```
+
+每兩頁合併為一張橫向圖片，輸出到 `output_cards/`，檔名格式為 `NNN-word.jpg`。
+
+---
+
 ## 檔案結構
 
 ```
 k3-vocabulary/
-├── K3.html               # 基本練習版
-├── K3-Sound.html         # 含發音版
-├── K3-Sound-SM2.html     # SM-2 智慧複習版（推薦）
-├── server.py             # 本機伺服器
-├── 001-tape.jpg
-├── 002-game.jpg
-├── ...
-└── 177-parrot.jpg        # 共 177 張字卡圖片
+├── K3.html                  # 基本練習版
+├── K3-Sound.html            # 含發音版
+├── K3-Sound-SM2.html        # SM-2 智慧複習版（推薦）
+├── K3.pdf                   # 原始 PDF 字卡
+├── server.py                # 本機伺服器
+├── convert_flashcards.py    # PDF → 圖片轉換工具
+└── output_cards/
+    ├── 001-tape.jpg
+    ├── 002-game.jpg
+    └── ...                  # 共 177 張字卡圖片
 ```

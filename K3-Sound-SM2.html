@@ -390,9 +390,18 @@
   #toast.red    { background: #c0392b; }
   #toast.blue   { background: #1a6db5; }
 
-  @media (max-width: 600px) {
-    #settings-screen { width: 96vw; padding: 24px 16px; }
-    .ctrl-btn { padding: 8px 11px; font-size: 0.82rem; }
+  /* Tablet ≤ 900px */
+  @media (max-width: 900px) {
+    #bottom-bar { height: auto; min-height: 110px; padding: 10px 14px; gap: 8px; }
+    .ctrl-btn { padding: 12px 22px; font-size: 1.05rem; border-radius: 10px; }
+  }
+
+  /* Mobile ≤ 480px */
+  @media (max-width: 480px) {
+    #settings-screen { width: 96vw; padding: 20px 14px; }
+    #bottom-bar { min-height: 80px; padding: 8px 10px; gap: 4px; }
+    #controls { gap: 5px; }
+    .ctrl-btn { padding: 8px 13px; font-size: 0.82rem; border-radius: 8px; }
   }
 </style>
 </head>
