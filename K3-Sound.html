@@ -347,6 +347,24 @@
 
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ── Speech Settings Sliders ─────────────────────────── */
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .slider-label { font-size: 0.85rem; color: #a8b2d8; width: 36px; flex-shrink: 0; }
+  .slider-row input[type="range"] { flex: 1; accent-color: #e94560; cursor: pointer; }
+  .slider-val {
+    font-size: 0.85rem;
+    color: #eee;
+    width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
   /* Tablet ≤ 900px */
   @media (max-width: 900px) {
     #bottom-bar { height: auto; min-height: 110px; padding: 10px 14px; gap: 8px; }
@@ -389,6 +407,22 @@
     <div class="order-option" id="opt-random" onclick="selectOrder('random')">
       <input type="radio" name="order" value="random" id="radio-random">
       <label for="radio-random">Randomly allocated</label>
+    </div>
+  </div>
+
+  <div class="setting-group">
+    <label>發音設定</label>
+    <div class="slider-row">
+      <span class="slider-label">語速</span>
+      <input type="range" id="rate-slider" min="0.5" max="1.0" step="0.05" value="0.70"
+             oninput="onRateChange(this.value)">
+      <span class="slider-val" id="rate-val">0.70</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">音調</span>
+      <input type="range" id="pitch-slider" min="0.8" max="1.5" step="0.1" value="1.1"
+             oninput="onPitchChange(this.value)">
+      <span class="slider-val" id="pitch-val">1.1</span>
     </div>
   </div>
 
@@ -490,42 +524,71 @@ let recorded    = {};
 // ── Speech ────────────────────────────────────────────────
 let voiceReady = false;
 let englishVoice = null;
+let speechRate  = 0.70;
+let speechPitch = 1.1;
 
 function initVoice() {
   const load = () => {
     const voices = speechSynthesis.getVoices();
-    // Prefer en-US or en-GB voices
     englishVoice =
+      voices.find(v => v.lang === "en-US" && /zira|jenny|aria|natasha/i.test(v.name)) ||
       voices.find(v => v.lang === "en-US") ||
       voices.find(v => v.lang.startsWith("en")) ||
       voices[0] || null;
     voiceReady = true;
   };
-  if (speechSynthesis.getVoices().length > 0) {
-    load();
-  } else {
-    speechSynthesis.addEventListener("voiceschanged", load, { once: true });
-  }
+  if (speechSynthesis.getVoices().length > 0) load();
+  else speechSynthesis.addEventListener("voiceschanged", load, { once: true });
 }
 
 function playSound() {
   if (!currentWord) return;
-
   speechSynthesis.cancel();
 
-  const btn = document.getElementById("play-sound-btn");
+  const btn  = document.getElementById("play-sound-btn");
   btn.classList.add("playing");
+  const word = currentWord + ".";
 
-  const utter = new SpeechSynthesisUtterance(currentWord);
-  utter.lang = "en-US";
-  utter.rate = 0.85;
-  utter.pitch = 1;
-  if (englishVoice) utter.voice = englishVoice;
+  function speak(onDone) {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang   = "en-US";
+    u.rate   = speechRate;
+    u.pitch  = speechPitch;
+    u.volume = 1;
+    if (englishVoice) u.voice = englishVoice;
+    u.onerror = () => btn.classList.remove("playing");
+    if (onDone) u.onend = onDone;
+    speechSynthesis.speak(u);
+  }
 
-  utter.onend = () => btn.classList.remove("playing");
-  utter.onerror = () => btn.classList.remove("playing");
+  speak(() => setTimeout(() => speak(() => btn.classList.remove("playing")), 800));
+}
 
-  speechSynthesis.speak(utter);
+function onRateChange(v) {
+  speechRate = parseFloat(v);
+  document.getElementById("rate-val").textContent = speechRate.toFixed(2);
+  localStorage.setItem("k3_speech_rate", speechRate);
+}
+
+function onPitchChange(v) {
+  speechPitch = parseFloat(v);
+  document.getElementById("pitch-val").textContent = speechPitch.toFixed(1);
+  localStorage.setItem("k3_speech_pitch", speechPitch);
+}
+
+function loadSpeechSettings() {
+  const r = parseFloat(localStorage.getItem("k3_speech_rate"));
+  const p = parseFloat(localStorage.getItem("k3_speech_pitch"));
+  if (!isNaN(r)) {
+    speechRate = r;
+    document.getElementById("rate-slider").value = r;
+    document.getElementById("rate-val").textContent = r.toFixed(2);
+  }
+  if (!isNaN(p)) {
+    speechPitch = p;
+    document.getElementById("pitch-slider").value = p;
+    document.getElementById("pitch-val").textContent = p.toFixed(1);
+  }
 }
 
 // ── Init ──────────────────────────────────────────────────
@@ -533,6 +596,7 @@ function init() {
   const saved = localStorage.getItem("k3_records");
   if (saved) { try { recorded = JSON.parse(saved); } catch(e) { recorded = {}; } }
   initVoice();
+  loadSpeechSettings();
 }
 
 // ── Settings ──────────────────────────────────────────────
