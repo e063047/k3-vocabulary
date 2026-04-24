@@ -364,7 +364,7 @@
       <label for="radio-start">Specify start position</label>
     </div>
     <div id="start-pos-group">
-      <label>Card number (001 – 177):</label>
+      <label>Card number (001 – <span id="card-range-end">177</span>):</label>
       <input type="number" id="start-pos" min="1" max="177" value="1">
     </div>
 
@@ -414,7 +414,7 @@
 
 <script>
 // ── Card list (auto-generated from output_cards/) ────────────────────────────
-const CARDS = [
+let CARDS = [
   "001-tape","002-game","003-gate","004-kite","005-cape",
   "006-cake","007-wave","008-pine","009-cane","010-name",
   "011-skate","012-ripe","013-mane","014-lake","015-cave",
@@ -453,7 +453,7 @@ const CARDS = [
   "176-lion","177-parrot"
 ];
 
-const TOTAL = CARDS.length;
+let TOTAL = CARDS.length;
 
 // 線上 (GitHub Pages) 圖片在根目錄，本機圖片在 output_cards/
 const IMG_BASE = location.hostname.includes("github.io") ? "" : "output_cards/";
@@ -685,6 +685,17 @@ function showToast(msg) {
   a.onclick = openReview;
   bar.insertBefore(a, document.getElementById("status-label"));
 })();
+
+// 從 cards.json 載入最新題庫；若失敗則沿用上方硬寫陣列
+fetch("cards.json")
+  .then(r => r.json())
+  .then(cards => {
+    CARDS = cards;
+    TOTAL = CARDS.length;
+    document.getElementById("card-range-end").textContent = String(TOTAL).padStart(3, "0");
+    document.getElementById("start-pos").max = TOTAL;
+  })
+  .catch(() => {});
 
 init();
 </script>

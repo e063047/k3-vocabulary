@@ -12,7 +12,9 @@ convert_flashcards.py — PDF 字卡轉 JPEG 圖片工具
 """
 
 import argparse
+import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -185,6 +187,20 @@ def extract_words(pdftotext, pdf_path):
     return words
 
 
+def generate_cards_json(output_dir, json_path):
+    """掃描 output_dir 裡的圖片，更新 cards.json。"""
+    pat = re.compile(r'^\d{3}-.+\.jpg$')
+    cards = sorted([
+        f[:-4]  # 去掉 .jpg
+        for f in os.listdir(output_dir)
+        if pat.match(f)
+    ])
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(cards, f, ensure_ascii=False, indent=2)
+    print(f"已更新 cards.json（共 {len(cards)} 張）→ {json_path}")
+    return cards
+
+
 def needs_ascii_copy(path: str) -> bool:
     try:
         path.encode("ascii")
@@ -317,6 +333,10 @@ def main():
     if error_count:
         print(f"警告：{error_count} 張轉換失敗")
     print(f"輸出位置：{output_dir}")
+
+    # 自動更新 cards.json
+    json_path = os.path.join(os.path.dirname(pdf_path), "cards.json")
+    generate_cards_json(output_dir, json_path)
 
 
 if __name__ == "__main__":
