@@ -1,4 +1,4 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -199,15 +199,22 @@
 
   /* ── Bottom Bar ───────────────────────────────────────── */
   #bottom-bar {
+    height: 22vh;
+    min-height: 130px;
     background: #16213e;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-    gap: 8px;
+    justify-content: space-evenly;
+    padding: 8px 20px;
     border-top: 2px solid #0f3460;
-    min-height: 70px;
-    flex-wrap: wrap;
+  }
+
+  #bottom-bar-info {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
   }
 
   #mode-label {
@@ -216,18 +223,17 @@
     padding: 5px 11px;
     border-radius: 20px;
     white-space: nowrap;
-    flex-shrink: 0;
   }
   #mode-label.test     { background: #e94560; color: #fff; }
   #mode-label.practise { background: #0f7c4c; color: #fff; }
 
-  #controls { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; flex: 1; }
+  #controls { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
 
   .ctrl-btn {
-    padding: 9px 16px;
+    padding: 21px 42px;
     border: none;
-    border-radius: 8px;
-    font-size: 0.88rem;
+    border-radius: 14px;
+    font-size: 1.6rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s;
@@ -254,6 +260,10 @@
   #btn-easy  { background: #1e8449; color: #fff; }
   #btn-easy:hover  { background: #196a3b; }
 
+  #prev-btn { background: #0f3460; color: #eee; border: 1px solid #2a4a80; }
+  #prev-btn:hover { background: #1a4a8a; }
+  #prev-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
   /* Show interval hints on buttons */
   .btn-hint { font-size: 0.68rem; font-weight: 400; opacity: 0.85; display: block; }
 
@@ -261,7 +271,6 @@
     font-size: 0.78rem;
     color: #a8b2d8;
     white-space: nowrap;
-    flex-shrink: 0;
     text-align: right;
     line-height: 1.5;
   }
@@ -440,13 +449,17 @@
   </div>
 
   <div id="bottom-bar">
-    <span id="mode-label">Test Mode</span>
-
+    <div id="bottom-bar-info">
+      <span id="mode-label">Test Mode</span>
+      <span id="stats-label">Status: 0 / 0</span>
+    </div>
     <div id="controls">
       <!-- Before answer (Test Mode) -->
       <button class="ctrl-btn" id="show-answer-btn" onclick="showAnswer()">Show Answer</button>
       <!-- Sound button (always visible) -->
-      <button class="ctrl-btn" id="play-sound-btn" onclick="playSound()">&#128266; Play Sound</button>
+      <button class="ctrl-btn" id="play-sound-btn" onclick="playSound()">&#128266; Play [P]</button>
+      <!-- Prev button -->
+      <button class="ctrl-btn" id="prev-btn" onclick="prevCard()">&#9664; Prev</button>
       <!-- SM-2 rating buttons (shown after answer) -->
       <button class="ctrl-btn" id="btn-again" onclick="rate(1)" style="display:none">
         Again<span class="btn-hint" id="hint-again"></span>
@@ -461,10 +474,8 @@
         Easy<span class="btn-hint" id="hint-easy"></span>
       </button>
       <!-- Progress button -->
-      <button class="ctrl-btn" onclick="openProgress()" style="background:#2a2a5a;color:#a8b2d8;font-size:0.78rem;padding:8px 11px;">Progress</button>
+      <button class="ctrl-btn" onclick="openProgress()" style="background:#2a2a5a;color:#a8b2d8;">Progress</button>
     </div>
-
-    <span id="stats-label">Status: 0 / 0</span>
   </div>
 </div>
 
@@ -704,6 +715,8 @@ function loadCard() {
   // Status
   document.getElementById("stats-label").textContent =
     "Status: " + (queueIdx + 1) + " / " + queue.length;
+
+  document.getElementById("prev-btn").disabled = (queueIdx === 0);
 }
 
 function setRatingVisible(show) {
@@ -718,6 +731,10 @@ function showAnswer() {
   document.getElementById("answer-cover").style.display = "none";
   document.getElementById("show-answer-btn").style.display = "none";
   setRatingVisible(true);
+}
+
+function prevCard() {
+  if (queueIdx > 0) { queueIdx--; loadCard(); }
 }
 
 // ── Rate Card (SM-2) ──────────────────────────────────────
@@ -891,6 +908,7 @@ document.addEventListener("keydown", e => {
     if (mode === "test" && !answered) showAnswer();
     else if (answered || mode === "practise") rate(4); // default: Good
   }
+  if (e.code === "ArrowLeft") { e.preventDefault(); prevCard(); }
   if (e.code === "Digit1") rate(1);
   if (e.code === "Digit2") rate(3);
   if (e.code === "Digit3") rate(4);
