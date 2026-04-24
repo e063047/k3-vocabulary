@@ -174,15 +174,22 @@
 
   /* ── Bottom Bar ───────────────────────────────────────── */
   #bottom-bar {
-    height: 10vh;
-    min-height: 64px;
+    height: 22vh;
+    min-height: 130px;
     background: #16213e;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    gap: 8px;
+    justify-content: space-evenly;
+    padding: 8px 20px;
     border-top: 2px solid #0f3460;
+  }
+
+  #bottom-bar-info {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
   }
 
   #mode-label {
@@ -193,9 +200,7 @@
     background: #0f3460;
     color: #a8b2d8;
     white-space: nowrap;
-    min-width: 110px;
     text-align: center;
-    flex-shrink: 0;
   }
 
   #mode-label.test     { background: #e94560; color: #fff; }
@@ -204,10 +209,10 @@
   #controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
   .ctrl-btn {
-    padding: 10px 18px;
+    padding: 21px 42px;
     border: none;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    border-radius: 14px;
+    font-size: 1.6rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -240,13 +245,15 @@
   #view-records-btn { background: #2a2a5a; color: #a8b2d8; font-size: 0.8rem; padding: 8px 12px; }
   #view-records-btn:hover { background: #3a3a7a; }
 
+  #prev-btn { background: #0f3460; color: #eee; border: 1px solid #2a4a80; }
+  #prev-btn:hover { background: #1a4a8a; }
+  #prev-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
   #status-label {
     font-size: 0.85rem;
     color: #a8b2d8;
     white-space: nowrap;
-    min-width: 100px;
     text-align: right;
-    flex-shrink: 0;
   }
 
   /* ── Review Screen ────────────────────────────────────── */
@@ -387,17 +394,18 @@
   </div>
 
   <div id="bottom-bar">
-    <span id="mode-label">Test Mode</span>
-
+    <div id="bottom-bar-info">
+      <span id="mode-label">Test Mode</span>
+      <span id="status-label">Status: 0 / 177</span>
+    </div>
     <div id="controls">
       <button class="ctrl-btn" id="show-answer-btn"  onclick="showAnswer()">Show Answer</button>
-      <button class="ctrl-btn" id="play-sound-btn"   onclick="playSound()">&#128266; Play Sound</button>
-      <button class="ctrl-btn" id="next-btn"         onclick="nextCard()">Next</button>
-      <button class="ctrl-btn" id="record-btn"       onclick="toggleRecord()">Record</button>
+      <button class="ctrl-btn" id="play-sound-btn"   onclick="playSound()">&#128266; Play [P]</button>
+      <button class="ctrl-btn" id="prev-btn"         onclick="prevCard()">&#9664; Prev</button>
+      <button class="ctrl-btn" id="next-btn"         onclick="nextCard()">Next &#9654;</button>
+      <button class="ctrl-btn" id="record-btn"       onclick="toggleRecord()">Record [R]</button>
       <button class="ctrl-btn" id="view-records-btn" onclick="openReview()">View Records</button>
     </div>
-
-    <span id="status-label">Status: 0 / 177</span>
   </div>
 </div>
 
@@ -459,7 +467,8 @@ const CARDS = [
 const WORDS = CARDS.map(c => c.slice(4).replace(/\s+/g, " ").trim());
 
 const TOTAL = CARDS.length;
- // 線上 (GitHub Pages) 圖片在根目錄，本機圖片在 output_cards/
+
+// 線上 (GitHub Pages) 圖片在根目錄，本機圖片在 output_cards/
 const IMG_BASE = location.hostname.includes("github.io") ? "" : "output_cards/";
 
 let mode        = "test";
@@ -502,7 +511,7 @@ function playSound() {
 
   const utter = new SpeechSynthesisUtterance(currentWord);
   utter.lang = "en-US";
-  utter.rate = 0.3;
+  utter.rate = 0.85;
   utter.pitch = 1;
   if (englishVoice) utter.voice = englishVoice;
 
@@ -568,7 +577,6 @@ function loadCard() {
   currentWord = WORDS[CARDS.indexOf(currentCard)];
   answered = false;
 
-  //document.getElementById("card-img").src = currentCard + ".jpg";
   document.getElementById("card-img").src = IMG_BASE + currentCard + ".jpg";
 
   const cover = document.getElementById("answer-cover");
@@ -585,12 +593,18 @@ function loadCard() {
 
   document.getElementById("status-label").textContent =
     "Status: " + (queueIdx + 1) + " / " + queue.length;
+
+  document.getElementById("prev-btn").disabled = (queueIdx === 0);
 }
 
 // ── Controls ──────────────────────────────────────────────
 function showAnswer() {
   answered = true;
   document.getElementById("answer-cover").style.display = "none";
+}
+
+function prevCard() {
+  if (queueIdx > 0) { queueIdx--; loadCard(); }
 }
 
 function nextCard() { queueIdx++; loadCard(); }
@@ -669,6 +683,7 @@ document.addEventListener("keydown", (e) => {
     if (mode === "test" && !answered) showAnswer();
     else nextCard();
   }
+  if (e.code === "ArrowLeft") { e.preventDefault(); prevCard(); }
   if (e.code === "KeyP") playSound();
   if (e.code === "KeyR") toggleRecord();
   if (e.code === "KeyV") openReview();
